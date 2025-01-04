@@ -320,6 +320,8 @@ def main():
         raise
 
 
+from A.model import BreastTrainer
+
 def train_models():
     """
     Train both BreastMNIST and BloodMNIST models using DataManager for data loading.
@@ -329,7 +331,21 @@ def train_models():
     breast_data = data_manager.load_breast_data()
     blood_data = data_manager.load_blood_data()
 
+    # Initialize trainers
+    breast_trainer = BreastTrainer(
+        learning_rate=0.001,  # Small learning rate for stable training
+        batch_size=32,  # Smaller batch size for better generalization
+        num_epochs=10  # Sufficient epochs for convergence
+    )
+
+
+    # Train BreastMNIST model
+    logging.info("Training BreastMNIST model...")
+    breast_trainer.train(
+        train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
+        val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']}
+    )
 
 if __name__ == "__main__":
-    # train_models()
-    main()
+    train_models()
+    # main()
