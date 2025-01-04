@@ -321,6 +321,8 @@ def main():
 
 
 from A.model import BreastTrainer
+from B.model import BloodTrainer
+
 
 def train_models():
     """
@@ -338,6 +340,11 @@ def train_models():
         num_epochs=10  # Sufficient epochs for convergence
     )
 
+    blood_trainer = BloodTrainer(
+        learning_rate=0.001,  # Small learning rate for stable training
+        batch_size=64,  # Larger batch size for multi-class task
+        num_epochs=20  # More epochs for complex task
+    )
 
     # Train BreastMNIST model
     logging.info("Training BreastMNIST model...")
@@ -345,6 +352,14 @@ def train_models():
         train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
         val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']}
     )
+
+    # Train BloodMNIST model
+    logging.info("Training BloodMNIST model...")
+    blood_trainer.train(
+        train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
+        val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']}
+    )
+
 
 if __name__ == "__main__":
     train_models()
