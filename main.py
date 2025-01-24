@@ -22,9 +22,9 @@ import torch
 from medmnist import BloodMNIST, BreastMNIST
 from torchvision import transforms
 
-from A.model import BreastCNNModel
+from A.cnn_model import BreastCNNModel
 from A.svm import SVMModel
-from B.model import BloodCNNModel
+from B.cnn_model import BloodCNNModel
 from B.resnet18 import ResNet18
 from unifiedtrainer import UnifiedTrainer
 
@@ -338,7 +338,7 @@ def train_models():
 
     # # Initialize and train BreastModel
     breast_model = BreastCNNModel()
-    breast_trainer = UnifiedTrainer(breast_model, learning_rate=0.0001, batch_size=10, num_epochs=50,
+    breast_trainer = UnifiedTrainer(breast_model, learning_rate=0.0001, batch_size=10, num_epochs=20,
                                     task_type='binary')
     breast_trainer.train(train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
                          val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']})

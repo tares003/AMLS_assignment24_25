@@ -118,6 +118,7 @@ class UnifiedTrainer:
         epochs = range(1, self.num_epochs + 1)
 
         plt.figure(figsize=(20, 12))
+        plt.suptitle(f'Model - {self.model.__class__.__name__}', fontsize=16)
         plt.subplot(2, 3, 1)
         plt.plot(epochs, self.train_losses, label='Training Loss')
         plt.plot(epochs, self.val_losses, label='Validation Loss')
@@ -184,12 +185,12 @@ class UnifiedTrainer:
             plt.legend()
             plt.title('Precision-Recall Curve')
 
-            plt.subplot(2, 3, 7)
-            plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
-            plt.xlabel('False Positive Rate')
-            plt.ylabel('True Positive Rate')
-            plt.legend()
-            plt.title('ROC Curve')
+        plt.figure(figsize=(10, 6))
+        plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.legend()
+        plt.title(f'ROC Curve - {self.model.__class__.__name__}')
 
         plt.tight_layout()
         plt.show()
