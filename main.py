@@ -9,8 +9,7 @@ BreastMNIST and BloodMNIST datasets from the MedMNIST database.
 The implementation supports both local data loading and automatic downloading through
 the medmnist package, ensuring efficient data handling for machine learning tasks.
 
-Author: [Your Name]
-Student Number: [Your Student Number]
+Author: Siddiqur Tareq
 """
 
 import logging
@@ -322,6 +321,7 @@ def main():
 
 from A.model import BreastTrainer
 from B.model import BloodTrainer
+from A_B.unified_svm import UnifiedSVMModel
 
 
 def train_models():
@@ -333,32 +333,54 @@ def train_models():
     breast_data = data_manager.load_breast_data()
     blood_data = data_manager.load_blood_data()
 
-    # Initialize trainers
-    breast_trainer = BreastTrainer(
-        learning_rate=0.001,  # Small learning rate for stable training
-        batch_size=32,  # Smaller batch size for better generalization
-        num_epochs=10  # Sufficient epochs for convergence
-    )
+    # # Initialize trainers
+    # breast_trainer = BreastTrainer(
+    #     learning_rate=0.001,  # Small learning rate for stable training
+    #     batch_size=32,  # Smaller batch size for better generalization
+    #     num_epochs=10  # Sufficient epochs for convergence
+    # )
+    #
+    # blood_trainer = BloodTrainer(
+    #     learning_rate=0.001,  # Small learning rate for stable training
+    #     batch_size=64,  # Larger batch size for multi-class task
+    #     num_epochs=20  # More epochs for complex task
+    # )
+    #
+    # # Train BreastMNIST model
+    # logging.info("Training BreastMNIST model...")
+    # breast_trainer.train(
+    #     train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
+    #     val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']}
+    # )
+    #
+    # # Train BloodMNIST model
+    # logging.info("Training BloodMNIST model...")
+    # blood_trainer.train(
+    #     train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
+    #     val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']}
+    # )
 
-    blood_trainer = BloodTrainer(
-        learning_rate=0.001,  # Small learning rate for stable training
-        batch_size=64,  # Larger batch size for multi-class task
-        num_epochs=20  # More epochs for complex task
-    )
+    # Initialize and train UnifiedSVMModel for BreastMNIST (binary classification)
+    logging.info("Training UnifiedSVMModel for BreastMNIST...")
+    svm_breast = UnifiedSVMModel(task_type='binary')
+    svm_breast.train({'images': breast_data['train_images'], 'labels': breast_data['train_labels']})
+    val_metrics_breast = svm_breast.evaluate({'images': breast_data['val_images'], 'labels': breast_data['val_labels']},
+                                             phase='validation')
+    test_metrics_breast = svm_breast.evaluate(
+        {'images': breast_data['test_images'], 'labels': breast_data['test_labels']}, phase='test')
+    logging.info(f"BreastMNIST SVM Validation Metrics: {val_metrics_breast}")
+    logging.info(f"BreastMNIST SVM Test Metrics: {test_metrics_breast}")
 
-    # Train BreastMNIST model
-    logging.info("Training BreastMNIST model...")
-    breast_trainer.train(
-        train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
-        val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']}
-    )
-
-    # Train BloodMNIST model
-    logging.info("Training BloodMNIST model...")
-    blood_trainer.train(
-        train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
-        val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']}
-    )
+    # Initialize and train UnifiedSVMModel for BloodMNIST (multi-class classification)
+    logging.info("Training UnifiedSVMModel for BloodMNIST...")
+    svm_blood = UnifiedSVMModel(task_type='multiclass')
+    svm_blood.train({'images': blood_data['train_images'], 'labels': blood_data['train_labels']})
+    val_metrics_blood = svm_blood.evaluate({'images': blood_data['val_images'], 'labels': blood_data['val_labels']},
+                                           phase='validation')
+    test_metrics_blood = svm_blood.evaluate({'images': blood_data['test_images'], 'labels': blood_data['test_labels']},
+                                            phase='test')
+    logging.info(f"BloodMNIST SVM Validation Metrics: {val_metrics_blood}")
+    logging.info(f"BloodMNIST SVM Test Metrics: {test_metrics_blood}")
 
 
 if __name__ == "__main__":

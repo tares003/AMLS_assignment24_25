@@ -133,7 +133,7 @@ if __name__ == "__main__":
     breast_data = data_manager.load_breast_data()
 
     breast_trainer = BreastTrainer(
-        learning_rate=0.001,
+        learning_rate=0.0001,
         batch_size=10,
         num_epochs=50
     )

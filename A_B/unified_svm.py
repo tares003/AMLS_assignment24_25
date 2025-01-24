@@ -18,6 +18,8 @@ class UnifiedSVMModel:
         self.task_type = task_type
         self.num_classes = 2 if task_type == 'binary' else 8
         self.scaler = StandardScaler()
+        # Use PCA for dimensionality reduction
+        self.pca = PCA(n_components=0.95)  # Keep 95% of variance
         self.model = SVC(probability=True)
 
     def train(self, train_data):
@@ -42,7 +44,10 @@ class UnifiedSVMModel:
                 'decision_function_shape': ['ovo', 'ovr']
             }
 
-        # Grid search with stratified k-fold
+        # Use fewer cross-validation folds for large datasets
+        n_folds = 3 if len(X_train) > 5000 else 5
+
+        print(f"Starting grid search with {n_folds}-fold cross validation...")
         grid_search = GridSearchCV(
             self.model,
             param_grid,
@@ -64,14 +69,31 @@ class UnifiedSVMModel:
         return predictions, probabilities
 
     def evaluate(self, data, phase='validation'):
-        """Comprehensive evaluation based on task type"""
-        X = data['images'].reshape(len(data['images']), -1)
+        """Evaluate model with memory-efficient processing"""
+        print(f"Evaluating on {phase} set...")
+        X = data['images']
         y_true = data['labels'].ravel()
-        X = self.scaler.transform(X)
 
-        y_pred = self.model.predict(X)
-        y_prob = self.model.predict_proba(X)
+        # Make predictions in smaller batches if needed
+        batch_size = 1000
+        n_samples = len(X)
+        y_pred = np.zeros(n_samples)
+        y_prob = np.zeros((n_samples, self.num_classes))
 
+        for i in range(0, n_samples, batch_size):
+            end_idx = min(i + batch_size, n_samples)
+            batch_pred = self.model.predict(X[i:end_idx])
+            batch_prob = self.model.predict_proba(X[i:end_idx])
+            y_pred[i:end_idx] = batch_pred
+            y_prob[i:end_idx] = batch_prob
+
+        metrics = self._calculate_metrics(y_true, y_pred)
+        self._plot_confusion_matrix(metrics['confusion_matrix'], phase)
+
+        return metrics
+
+    def _calculate_metrics(self, y_true, y_pred):
+        """Calculate metrics based on task type"""
         metrics = {}
 
         # Common metrics

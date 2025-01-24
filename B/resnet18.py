@@ -2,9 +2,9 @@ import torch.nn as nn
 import torchvision.models as models
 
 
-class EnhancedResNet18(nn.Module):
+class ResNet18(nn.Module):
     def __init__(self, output_classes=8, dropout_rate=0.5):
-        super(EnhancedResNet18, self).__init__()
+        super(ResNet18, self).__init__()
         # Load pretrained ResNet18 with ImageNet weights
         self.resnet = models.resnet18(pretrained=True)
 
