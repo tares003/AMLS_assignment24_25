@@ -22,9 +22,17 @@ import torch
 from medmnist import BloodMNIST, BreastMNIST
 from torchvision import transforms
 
+from A.model import BreastCNNModel
+from A.svm import SVMModel
+from B.model import BloodCNNModel
+from B.resnet18 import ResNet18
+from unifiedtrainer import UnifiedTrainer
+
 # Configure logging with timestamp and level for debugging purposes
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+# Set the logging level for matplotlib.font_manager to WARNING
+logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
 
 
 class DataManager:
@@ -319,11 +327,6 @@ def main():
         raise
 
 
-from A.model import BreastTrainer
-from B.model import BloodTrainer
-from A_B.unified_svm import UnifiedSVMModel
-
-
 def train_models():
     """
     Train both BreastMNIST and BloodMNIST models using DataManager for data loading.
@@ -333,54 +336,38 @@ def train_models():
     breast_data = data_manager.load_breast_data()
     blood_data = data_manager.load_blood_data()
 
-    # # Initialize trainers
-    # breast_trainer = BreastTrainer(
-    #     learning_rate=0.001,  # Small learning rate for stable training
-    #     batch_size=32,  # Smaller batch size for better generalization
-    #     num_epochs=10  # Sufficient epochs for convergence
-    # )
+    # # Initialize and train BreastModel
+    breast_model = BreastCNNModel()
+    breast_trainer = UnifiedTrainer(breast_model, learning_rate=0.0001, batch_size=10, num_epochs=50,
+                                    task_type='binary')
+    breast_trainer.train(train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
+                         val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']})
+    breast_trainer.plot_metrics(val_data={'images': breast_data['val_images'],
+                                          'labels': breast_data['val_labels']})
     #
-    # blood_trainer = BloodTrainer(
-    #     learning_rate=0.001,  # Small learning rate for stable training
-    #     batch_size=64,  # Larger batch size for multi-class task
-    #     num_epochs=20  # More epochs for complex task
-    # )
-    #
-    # # Train BreastMNIST model
-    # logging.info("Training BreastMNIST model...")
-    # breast_trainer.train(
-    #     train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
-    #     val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']}
-    # )
-    #
-    # # Train BloodMNIST model
-    # logging.info("Training BloodMNIST model...")
-    # blood_trainer.train(
-    #     train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
-    #     val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']}
-    # )
+    # # Initialize and train BloodModel
+    blood_model = BloodCNNModel()
+    blood_trainer = UnifiedTrainer(blood_model, learning_rate=0.001, batch_size=64, num_epochs=20,
+                                   task_type='multiclass')
+    blood_trainer.train(train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
+                        val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']})
+    blood_trainer.plot_metrics(val_data={'images': blood_data['val_images'],
+                                         'labels': blood_data['val_labels']})
 
-    # Initialize and train UnifiedSVMModel for BreastMNIST (binary classification)
-    logging.info("Training UnifiedSVMModel for BreastMNIST...")
-    svm_breast = UnifiedSVMModel(task_type='binary')
-    svm_breast.train({'images': breast_data['train_images'], 'labels': breast_data['train_labels']})
-    val_metrics_breast = svm_breast.evaluate({'images': breast_data['val_images'], 'labels': breast_data['val_labels']},
-                                             phase='validation')
-    test_metrics_breast = svm_breast.evaluate(
-        {'images': breast_data['test_images'], 'labels': breast_data['test_labels']}, phase='test')
-    logging.info(f"BreastMNIST SVM Validation Metrics: {val_metrics_breast}")
-    logging.info(f"BreastMNIST SVM Test Metrics: {test_metrics_breast}")
+    # Initialize and train ResNet18
+    resnet_model = ResNet18(output_classes=8)
+    resnet_trainer = UnifiedTrainer(resnet_model, learning_rate=0.001, batch_size=64, num_epochs=20,
+                                    task_type='multiclass')
+    resnet_trainer.train(train_data={'images': blood_data['train_images'], 'labels': blood_data['train_labels']},
+                         val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']})
+    resnet_trainer.plot_metrics(val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']})
 
-    # Initialize and train UnifiedSVMModel for BloodMNIST (multi-class classification)
-    logging.info("Training UnifiedSVMModel for BloodMNIST...")
-    svm_blood = UnifiedSVMModel(task_type='multiclass')
-    svm_blood.train({'images': blood_data['train_images'], 'labels': blood_data['train_labels']})
-    val_metrics_blood = svm_blood.evaluate({'images': blood_data['val_images'], 'labels': blood_data['val_labels']},
-                                           phase='validation')
-    test_metrics_blood = svm_blood.evaluate({'images': blood_data['test_images'], 'labels': blood_data['test_labels']},
-                                            phase='test')
-    logging.info(f"BloodMNIST SVM Validation Metrics: {val_metrics_blood}")
-    logging.info(f"BloodMNIST SVM Test Metrics: {test_metrics_blood}")
+    # Initialize and train SVMModel for BreastMNIST (binary classification)
+    # logger.info("Training SVMModel for BreastMNIST...")
+    # svm_breast = SVMModel(output_classes=2)
+    # svm_breast.train(train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
+    #                  val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']})
+    # svm_breast.plot_metrics()
 
 
 if __name__ == "__main__":
