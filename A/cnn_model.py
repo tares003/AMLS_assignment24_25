@@ -42,7 +42,7 @@ class BreastCNNModel(nn.Module):
         # Fully connected layers for classification
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 16 * 16, 512),  # Adjusted input size
+            nn.Linear(128 * 16 * 16, 512),
             nn.ReLU(),
             nn.Dropout(0.5),  # Prevent overfitting
             nn.Linear(512, 1),

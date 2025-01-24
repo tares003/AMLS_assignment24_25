@@ -24,7 +24,7 @@ class BloodCNNModel(nn.Module):
         # More complex CNN for multi-class classification
         self.conv_layers = nn.Sequential(
             # First conv block with batch norm
-            nn.Conv2d(3, 64, kernel_size=3, padding=1),  # Adjusted input channels to 3
+            nn.Conv2d(3, 64, kernel_size=3, padding=1),  # input channels to 3
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(2),
@@ -45,7 +45,7 @@ class BloodCNNModel(nn.Module):
         # Deeper FC layers for multi-class
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(256 * 16 * 16, 1024),  # Adjusted input size
+            nn.Linear(256 * 16 * 16, 1024),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(1024, 512),

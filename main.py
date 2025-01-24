@@ -336,7 +336,7 @@ def train_models():
     breast_data = data_manager.load_breast_data()
     blood_data = data_manager.load_blood_data()
 
-    # # Initialize and train BreastModel
+    # # # Initialize and train BreastModel
     breast_model = BreastCNNModel()
     breast_trainer = UnifiedTrainer(breast_model, learning_rate=0.0001, batch_size=10, num_epochs=20,
                                     task_type='binary')
@@ -363,11 +363,11 @@ def train_models():
     resnet_trainer.plot_metrics(val_data={'images': blood_data['val_images'], 'labels': blood_data['val_labels']})
 
     # Initialize and train SVMModel for BreastMNIST (binary classification)
-    # logger.info("Training SVMModel for BreastMNIST...")
-    # svm_breast = SVMModel(output_classes=2)
-    # svm_breast.train(train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
-    #                  val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']})
-    # svm_breast.plot_metrics()
+    logger.info("Training SVMModel for BreastMNIST...")
+    svm_breast = SVMModel(output_classes=2)
+    svm_breast.train(train_data={'images': breast_data['train_images'], 'labels': breast_data['train_labels']},
+                     val_data={'images': breast_data['val_images'], 'labels': breast_data['val_labels']})
+    svm_breast.plot_metrics()
 
 
 if __name__ == "__main__":
